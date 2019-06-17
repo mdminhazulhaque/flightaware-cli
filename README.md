@@ -1,6 +1,6 @@
 # flightaware-cli
 
-Flight updates from FlightAware using cli.
+Flight updates from FlightAware using commandline.
 
 # Required Modules
 
@@ -12,7 +12,10 @@ Flight updates from FlightAware using cli.
 
 ## How To Run
 
-`python3 flightaware.py MAS103`
+```bash
+python3 flightaware.py MAS103 # Malaysian Airlines 103
+python3 flightaware.py AXM714 # AirAsia 714
+```
 
 ## Preview
 
