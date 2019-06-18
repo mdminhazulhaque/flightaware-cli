@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 __author__ = "Md. Minhazul Haque"
-__version__ = "0.2.0"
+__version__ = "0.1.0"
 __license__ = "GPLv3"
 
 """
@@ -23,27 +23,52 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 import json
 from datetime import datetime
 import sys
+import os
 import requests
 from tabulate import tabulate
 
-BASE = "https://flightaware.com/live/flight"
-HEADERS = ["Time", "Latitude", "Longitude", "Altitude (ft/100)", "Ground Speed (mph)"]
+BASE = "https://flightaware.com/live/flight/"
+HEADERS = ["time", "lat", "long", "alt", "gs"]
+LIMIT = int(os.environ['LIMIT']) if 'LIMIT' in os.environ else 10
 
 if __name__ == "__main__":
-    flight = sys.argv[1].strip()
-    content = requests.get(BASE + "/" + flight, allow_redirects=True).text
+    try:
+        flight = sys.argv[1].strip()
+    except:
+        exit("Flight number required")
+    
+    try:
+        response = requests.get(BASE + flight)
+    except:
+        exit("Request cannot be fetched")
+    
+    # If 301, then get redirected flight name
+    if response.status_code == 301:
+        newurl = response.headers['Location']
+        flight = newurl.split("/")[-1]
+        response = requests.get(BASE + flight)
+    
+    # extract data from script tag in html
     head = "<script>var trackpollBootstrap = "
     tail = ";</script>"
     
-    for line in content.split("\n"):
+    for line in response.text.split("\n"):
         if head in line:
             data = line.replace(head, "").replace(tail, "")
+            break
     
     tab = []
-    data = json.loads(data)
+    try:
+        data = json.loads(data)
+    except:
+        exit("Flight data not found")
+                
     for key in data['flights']:
         flight_id = key
         break
+    
+    if "INVALID" in flight_id:
+        exit("Invalid flight number")
     
     for track in data['flights'][flight_id]['track']:
         ts = int(track['timestamp'])
@@ -57,5 +82,8 @@ if __name__ == "__main__":
             track['gs']
         ]
         tab.append(row)
-        
-    print(tabulate(tab[-10:], headers=HEADERS))
+    
+    if len(tab) < LIMIT:
+        print(tabulate(tab, headers=HEADERS))
+    else:
+        print(tabulate(tab[-LIMIT:], headers=HEADERS))

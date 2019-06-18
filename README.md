@@ -13,7 +13,7 @@ Flight updates from FlightAware using commandline.
 ## How To Run
 
 ```bash
-python3 flightaware.py MAS103 # Malaysian Airlines 103
+python3 flightaware.py MH103 # Will redirect to MAS103 (Malaysian Airlines 103)
 python3 flightaware.py AXM714 # AirAsia 714
 ```
 
